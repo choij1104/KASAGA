@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sangnok Senior Association — Member Manager</title>
+<style>
+  :root{
+    --navy:#1b2a4a;
+    --navy-2:#25396b;
+    --gold:#b8892b;
+    --gold-soft:#e7cf9a;
+    --paper:#f7f4ee;
+    --card:#ffffff;
+    --ink:#22262e;
+    --ink-soft:#5a616e;
+    --line:#e2ddd2;
+    --green:#2e7d54;
+    --red:#b23b3b;
+    --shadow:0 1px 3px rgba(27,42,74,.08),0 6px 20px rgba(27,42,74,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper);color:var(--ink);line-height:1.5;font-size:17px;
+  }
+  /* ---------- Header ---------- */
+  header{
+    background:linear-gradient(135deg,var(--navy),var(--navy-2));
+    color:#fff;padding:22px 28px;display:flex;align-items:center;gap:18px;
+    border-bottom:3px solid var(--gold);
+  }
+  .crest{
+    width:52px;height:52px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 50% 40%,var(--gold-soft),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:var(--navy);font-size:20px;border:2px solid #fff3;
+  }
+  header h1{font-size:20px;font-weight:700;letter-spacing:.2px;line-height:1.25}
+  header p{font-size:13px;color:#cdd6ea;font-weight:400;margin-top:2px}
+  /* ---------- Tabs ---------- */
+  nav{
+    background:var(--card);border-bottom:1px solid var(--line);
+    display:flex;gap:4px;padding:0 20px;position:sticky;top:0;z-index:20;
+    box-shadow:var(--shadow);flex-wrap:wrap;
+  }
+  nav button{
+    border:none;background:none;font-size:16px;font-weight:600;color:var(--ink-soft);
+    padding:16px 20px;cursor:pointer;border-bottom:3px solid transparent;transition:.15s;
+  }
+  nav button:hover{color:var(--navy)}
+  nav button.active{color:var(--navy);border-bottom-color:var(--gold)}
+  /* ---------- Layout ---------- */
+  main{max-width:1120px;margin:0 auto;padding:26px 20px 80px}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  h2.section{font-size:22px;color:var(--navy);margin-bottom:4px;font-weight:700}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:20px}
+  /* ---------- Stat cards ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:26px}
+  .stat{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gold)}
+  .stat .label{font-size:13px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .stat .value{font-size:30px;font-weight:800;color:var(--navy);margin-top:6px;font-variant-numeric:tabular-nums}
+  .stat .value.money{color:var(--green)}
+  .stat .foot{font-size:12px;color:var(--ink-soft);margin-top:4px}
+  /* ---------- Panel ---------- */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin-bottom:22px}
+  .panel-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .panel-head h3{font-size:16px;color:var(--navy);font-weight:700}
+  .panel-body{padding:20px}
+  /* ---------- Forms ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  label.field{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+  input,select{
+    font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+    background:#fff;color:var(--ink);width:100%;
+  }
+  input:focus,select:focus{outline:2px solid var(--gold-soft);border-color:var(--gold)}
+  .btn{
+    font:inherit;font-weight:700;font-size:15px;border:none;border-radius:8px;padding:11px 20px;
+    cursor:pointer;transition:.15s;
+  }
+  .btn-primary{background:var(--navy);color:#fff}
+  .btn-primary:hover{background:var(--navy-2)}
+  .btn-gold{background:var(--gold);color:#fff}
+  .btn-gold:hover{filter:brightness(1.06)}
+  .btn-ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--paper)}
+  .btn-sm{padding:6px 12px;font-size:13px}
+  .btn-danger{background:#fff;color:var(--red);border:1px solid #e6c9c9}
+  .btn-danger:hover{background:#fbeaea}
+  .row-actions{display:flex;gap:6px;justify-content:flex-end}
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{background:var(--paper);color:var(--navy);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+  tbody tr:hover{background:#faf8f3}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+  .pill.paid{background:#e4f2ea;color:var(--green)}
+  .pill.unpaid{background:#fbeaea;color:var(--red)}
+  .pill.in{background:#e4f2ea;color:var(--green)}
+  .pill.out{background:#fdf0e4;color:#b5651d}
+  .empty{padding:40px 20px;text-align:center;color:var(--ink-soft)}
+  .empty svg{opacity:.4;margin-bottom:8px}
+  /* ---------- Search ---------- */
+  .search{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .search input{max-width:280px}
+  /* ---------- Toast ---------- */
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:var(--navy);color:#fff;padding:13px 22px;border-radius:10px;font-weight:600;
+    box-shadow:0 8px 30px rgba(0,0,0,.25);opacity:0;transition:.3s;z-index:100;font-size:15px;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  /* ---------- Footer note ---------- */
+  .note{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:30px;line-height:1.7}
+  .data-tools{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  @media(max-width:560px){
+    header{padding:16px 18px}
+    header h1{font-size:17px}
+    nav button{padding:14px 14px;font-size:15px}
+    .stat .value{font-size:26px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="crest">상록</div>
+  <div>
+    <h1>Korean American Senior Citizens Association of Greater San Antonio</h1>
+    <p>Member &amp; Finance Manager · Sangnok Senior Association</p>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" data-view="dashboard">Dashboard</button>
+  <button class="tab" data-view="members">Members</button>
+  <button class="tab" data-view="finance">Dues &amp; Donations</button>
+</nav>
+
+<main>
+  <!-- ============ DASHBOARD ============ -->
+  <section id="dashboard" class="view active">
+    <h2 class="section">Dashboard</h2>
+    <p class="sub">A snapshot of membership and funds. All data is saved on this computer only.</p>
+    <div class="stats" id="statCards"></div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Recent Transactions</h3>
+        <button class="btn btn-ghost btn-sm" onclick="switchView('finance')">View all</button></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Member</th><th class="num">Amount</th></tr></thead>
+          <tbody id="recentTx"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MEMBERS ============ -->
+  <section id="members" class="view">
+    <h2 class="section">Members</h2>
+    <p class="sub">Membership requires age 65 or older. The card number is printed on the physical PVC card.</p>
+
+    <div class="panel">
+      <div class="panel-head"><h3 id="memberFormTitle">Add a Member</h3></div>
+      <div class="panel-body">
+        <div class="grid">
+          <label class="field">Full name
+            <input id="m_name" placeholder="e.g. Kim Young-ja"></label>
+          <label class="field">Date of birth
+            <input id="m_dob" type="date"></label>
+          <label class="field">Phone
+            <input id="m_phone" placeholder="(210) 555-0123"></label>
+          <label class="field">Email
+            <input id="m_email" placeholder="name@email.com"></label>
+          <label class="field">Address
+            <input id="m_addr" placeholder="Street, City, TX ZIP"></label>
+          <label class="field">Join date
+            <input id="m_join" type="date"></label>
+          <label class="field">Card number
+            <input id="m_card" placeholder="e.g. SN-0001"></label>
+          <label class="field">Dues status
+            <select id="m_dues"><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></label>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn-primary" id="m_save" onclick="saveMember()">Add member</button>
+          <button class="btn btn-ghost" id="m_cancel" onclick="resetMemberForm()" style="display:none">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="search">
+      <input id="m_search" placeholder="Search by name, phone, or card #" oninput="renderMembers()">
+    </div>
+    <div class="panel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Age</th><th>Phone</th><th>Card #</th><th>Joined</th><th>Dues</th><th></th></tr></thead>
+          <tbody id="memberRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FINANCE ============ -->
+  <section id="finance" class="view">
+    <h2 class="section">Dues &amp; Donations</h2>
+    <p class="sub">Record every dollar in and out. This is exactly the record you'll need for the annual IRS 990-N filing.</p>
+
+    <div class="panel">
+      <div class="panel-head"><h3 id="txFormTitle">Record a Transaction</h3></div>
+      <div class="panel-body">
+        <div class="grid">
+          <label class="field">Date
+            <input id="t_date" type="date"></label>
+          <label class="field">Type
+            <select id="t_type">
+              <option value="dues">Dues (in)</option>
+              <option value="donation">Donation (in)</option>
+              <option value="other-in">Other income (in)</option>
+              <option value="expense">Expense (out)</option>
+            </select></label>
+          <label class="field">Amount (USD)
+            <input id="t_amount" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label class="field">Member / Donor (optional)
+            <input id="t_member" placeholder="Name"></label>
+          <label class="field" style="grid-column:1/-1">Description
+            <input id="t_desc" placeholder="e.g. 2026 annual dues / concert donation"></label>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn-gold" id="t_save" onclick="saveTx()">Record</button>
+          <button class="btn btn-ghost" id="t_cancel" onclick="resetTxForm()" style="display:none">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats" id="finStats"></div>
+
+    <div class="search">
+      <input id="t_search" placeholder="Search transactions" oninput="renderTx()">
+    </div>
+    <div class="panel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Member/Donor</th><th class="num">Amount</th><th></th></tr></thead>
+          <tbody id="txRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="note">
+    Data is stored only in this browser on this computer. Back it up regularly with Export.
+    <div class="data-tools">
+      <button class="btn btn-ghost btn-sm" onclick="exportData()">Export backup (.json)</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">Import backup</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">Export members (.csv)</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ---------------- Storage ---------------- */
+const KEY_M="sangnok_members_v1", KEY_T="sangnok_tx_v1";
+let members=[], txs=[], editMemberId=null, editTxId=null;
+
+function load(){
+  try{members=JSON.parse(localStorage.getItem(KEY_M)||"[]")}catch(e){members=[]}
+  try{txs=JSON.parse(localStorage.getItem(KEY_T)||"[]")}catch(e){txs=[]}
+}
+function persist(){
+  localStorage.setItem(KEY_M,JSON.stringify(members));
+  localStorage.setItem(KEY_T,JSON.stringify(txs));
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+/* ---------------- Helpers ---------------- */
+function money(n){return "$"+Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function age(dob){if(!dob)return"";const d=new Date(dob),t=new Date();let a=t.getFullYear()-d.getFullYear();const m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return a}
+function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function today(){return new Date().toISOString().slice(0,10)}
+function fmtDate(s){if(!s)return"—";const d=new Date(s+"T00:00");return d.toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"})}
+const TYPE_LABEL={dues:"Dues",donation:"Donation","other-in":"Other income",expense:"Expense"};
+const IN_TYPES=["dues","donation","other-in"];
+
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200)}
+
+/* ---------------- Nav ---------------- */
+function switchView(v){
+  document.querySelectorAll(".view").forEach(el=>el.classList.toggle("active",el.id===v));
+  document.querySelectorAll("nav .tab").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
+  if(v==="dashboard")renderDashboard();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("nav .tab").forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+
+/* ---------------- Members ---------------- */
+function saveMember(){
+  const name=document.getElementById("m_name").value.trim();
+  if(!name){toast("Please enter a name");return}
+  const dob=document.getElementById("m_dob").value;
+  if(dob&&age(dob)<65){
+    if(!confirm("This person is under 65. Membership normally requires age 65 or older. Add anyway?"))return;
+  }
+  const rec={
+    id:editMemberId||uid(),
+    name,
+    dob,
+    phone:document.getElementById("m_phone").value.trim(),
+    email:document.getElementById("m_email").value.trim(),
+    addr:document.getElementById("m_addr").value.trim(),
+    join:document.getElementById("m_join").value||today(),
+    card:document.getElementById("m_card").value.trim(),
+    dues:document.getElementById("m_dues").value
+  };
+  if(editMemberId){const i=members.findIndex(m=>m.id===editMemberId);members[i]=rec;toast("Member updated")}
+  else{members.push(rec);toast("Member added")}
+  persist();resetMemberForm();renderMembers();
+}
+function editMember(id){
+  const m=members.find(x=>x.id===id);if(!m)return;
+  editMemberId=id;
+  m_name.value=m.name;m_dob.value=m.dob||"";m_phone.value=m.phone||"";m_email.value=m.email||"";
+  m_addr.value=m.addr||"";m_join.value=m.join||"";m_card.value=m.card||"";m_dues.value=m.dues||"paid";
+  document.getElementById("memberFormTitle").textContent="Edit Member";
+  document.getElementById("m_save").textContent="Save changes";
+  document.getElementById("m_cancel").style.display="";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetMemberForm(){
+  editMemberId=null;
+  ["m_name","m_dob","m_phone","m_email","m_addr","m_join","m_card"].forEach(id=>document.getElementById(id).value="");
+  m_dues.value="paid";
+  document.getElementById("memberFormTitle").textContent="Add a Member";
+  document.getElementById("m_save").textContent="Add member";
+  document.getElementById("m_cancel").style.display="none";
+}
+function delMember(id){
+  const m=members.find(x=>x.id===id);
+  if(!confirm("Remove "+(m?m.name:"this member")+"? This cannot be undone."))return;
+  members=members.filter(x=>x.id!==id);persist();renderMembers();toast("Member removed");
+}
+function toggleDues(id){
+  const m=members.find(x=>x.id===id);if(!m)return;
+  m.dues=m.dues==="paid"?"unpaid":"paid";persist();renderMembers();
+}
+function renderMembers(){
+  const q=(document.getElementById("m_search").value||"").toLowerCase();
+  const rows=members
+    .filter(m=>!q||[m.name,m.phone,m.card].some(v=>String(v||"").toLowerCase().includes(q)))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  const tb=document.getElementById("memberRows");
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty">No members yet. Add your first member above.</div></td></tr>`;return}
+  tb.innerHTML=rows.map(m=>`<tr>
+    <td><strong>${esc(m.name)}</strong>${m.email?`<br><span style="font-size:12px;color:var(--ink-soft)">${esc(m.email)}</span>`:""}</td>
+    <td>${m.dob?age(m.dob):"—"}</td>
+    <td>${esc(m.phone)||"—"}</td>
+    <td>${esc(m.card)||"—"}</td>
+    <td>${fmtDate(m.join)}</td>
+    <td><span class="pill ${m.dues==='paid'?'paid':'unpaid'}" style="cursor:pointer" onclick="toggleDues('${m.id}')" title="Click to toggle">${m.dues==='paid'?'Paid':'Unpaid'}</span></td>
+    <td><div class="row-actions">
+      <button class="btn btn-ghost btn-sm" onclick="editMember('${m.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="delMember('${m.id}')">Remove</button>
+    </div></td>
+  </tr>`).join("");
+}
+
+/* ---------------- Transactions ---------------- */
+function saveTx(){
+  const amount=parseFloat(document.getElementById("t_amount").value);
+  if(!(amount>0)){toast("Enter an amount greater than 0");return}
+  const rec={
+    id:editTxId||uid(),
+    date:document.getElementById("t_date").value||today(),
+    type:document.getElementById("t_type").value,
+    amount:amount,
+    member:document.getElementById("t_member").value.trim(),
+    desc:document.getElementById("t_desc").value.trim()
+  };
+  if(editTxId){const i=txs.findIndex(t=>t.id===editTxId);txs[i]=rec;toast("Transaction updated")}
+  else{txs.push(rec);toast("Transaction recorded")}
+  persist();resetTxForm();renderTx();
+}
+function editTx(id){
+  const t=txs.find(x=>x.id===id);if(!t)return;
+  editTxId=id;
+  t_date.value=t.date;t_type.value=t.type;t_amount.value=t.amount;t_member.value=t.member||"";t_desc.value=t.desc||"";
+  document.getElementById("txFormTitle").textContent="Edit Transaction";
+  document.getElementById("t_save").textContent="Save changes";
+  document.getElementById("t_cancel").style.display="";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetTxForm(){
+  editTxId=null;
+  ["t_amount","t_member","t_desc"].forEach(id=>document.getElementById(id).value="");
+  t_date.value="";t_type.value="dues";
+  document.getElementById("txFormTitle").textContent="Record a Transaction";
+  document.getElementById("t_save").textContent="Record";
+  document.getElementById("t_cancel").style.display="none";
+}
+function delTx(id){
+  if(!confirm("Delete this transaction? This cannot be undone."))return;
+  txs=txs.filter(x=>x.id!==id);persist();renderTx();toast("Transaction deleted");
+}
+function renderTx(){
+  const q=(document.getElementById("t_search").value||"").toLowerCase();
+  const rows=txs
+    .filter(t=>!q||[t.desc,t.member,TYPE_LABEL[t.type]].some(v=>String(v||"").toLowerCase().includes(q)))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  const tb=document.getElementById("txRows");
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty">No transactions yet. Record dues or donations above.</div></td></tr>`}
+  else{
+    tb.innerHTML=rows.map(t=>{const isIn=IN_TYPES.includes(t.type);return `<tr>
+      <td>${fmtDate(t.date)}</td>
+      <td><span class="pill ${isIn?'in':'out'}">${TYPE_LABEL[t.type]}</span></td>
+      <td>${esc(t.desc)||"—"}</td>
+      <td>${esc(t.member)||"—"}</td>
+      <td class="num" style="color:${isIn?'var(--green)':'var(--red)'};font-weight:700">${isIn?"+":"−"}${money(t.amount)}</td>
+      <td><div class="row-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editTx('${t.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="delTx('${t.id}')">Delete</button>
+      </div></td>
+    </tr>`}).join("");
+  }
+  renderFinStats();
+}
+function totals(){
+  let inc=0,exp=0;
+  txs.forEach(t=>{if(IN_TYPES.includes(t.type))inc+=+t.amount;else exp+=+t.amount});
+  return{inc,exp,bal:inc-exp};
+}
+function renderFinStats(){
+  const {inc,exp,bal}=totals();
+  document.getElementById("finStats").innerHTML=`
+    ${statCard("Total income",money(inc),"All dues + donations",true)}
+    ${statCard("Total expenses",money(exp),"All money out",false,"var(--red)")}
+    ${statCard("Current balance",money(bal),"Income minus expenses",true)}`;
+}
+
+/* ---------------- Dashboard ---------------- */
+function statCard(label,value,foot,money=false,color){
+  return `<div class="stat"><div class="label">${label}</div>
+    <div class="value ${money?'money':''}" ${color?`style="color:${color}"`:""}>${value}</div>
+    <div class="foot">${foot}</div></div>`;
+}
+function renderDashboard(){
+  const {inc,exp,bal}=totals();
+  const paid=members.filter(m=>m.dues==="paid").length;
+  const rate=members.length?Math.round(paid/members.length*100):0;
+  document.getElementById("statCards").innerHTML=`
+    ${statCard("Total members",members.length,"Registered seniors")}
+    ${statCard("Dues paid",paid+" / "+members.length,rate+"% current")}
+    ${statCard("Current balance",money(bal),"Available funds",true)}
+    ${statCard("Total donations",money(txs.filter(t=>t.type==="donation").reduce((s,t)=>s+ +t.amount,0)),"Lifetime gifts",true)}`;
+  const recent=[...txs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+  const tb=document.getElementById("recentTx");
+  if(!recent.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty">No activity yet.</div></td></tr>`;return}
+  tb.innerHTML=recent.map(t=>{const isIn=IN_TYPES.includes(t.type);return `<tr>
+    <td>${fmtDate(t.date)}</td>
+    <td><span class="pill ${isIn?'in':'out'}">${TYPE_LABEL[t.type]}</span></td>
+    <td>${esc(t.desc)||"—"}</td>
+    <td>${esc(t.member)||"—"}</td>
+    <td class="num" style="color:${isIn?'var(--green)':'var(--red)'};font-weight:700">${isIn?"+":"−"}${money(t.amount)}</td>
+  </tr>`}).join("");
+}
+
+/* ---------------- Backup ---------------- */
+function exportData(){
+  const blob=new Blob([JSON.stringify({members,txs,exported:new Date().toISOString()},null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="sangnok_backup_"+today()+".json";a.click();toast("Backup downloaded");
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!confirm("This will replace all current data with the backup. Continue?"))return;
+      members=d.members||[];txs=d.txs||[];persist();
+      renderMembers();renderTx();renderDashboard();toast("Backup imported");
+    }catch(err){toast("Could not read that file")}
+  };
+  r.readAsText(f);e.target.value="";
+}
+function exportCSV(){
+  if(!members.length){toast("No members to export");return}
+  const head=["Name","DOB","Age","Phone","Email","Address","Join date","Card #","Dues"];
+  const rows=members.map(m=>[m.name,m.dob,m.dob?age(m.dob):"",m.phone,m.email,m.addr,m.join,m.card,m.dues]
+    .map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(","));
+  const blob=new Blob([head.join(",")+"\n"+rows.join("\n")],{type:"text/csv"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="sangnok_members_"+today()+".csv";a.click();toast("Members exported");
+}
+
+/* ---------------- Init ---------------- */
+load();renderMembers();renderTx();renderDashboard();
+document.getElementById("m_join").value=today();
+document.getElementById("t_date").value=today();
+</script>
+</body>
+</html>
