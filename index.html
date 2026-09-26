@@ -297,7 +297,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 function money(n){return "$"+Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function age(dob){if(!dob)return"";const d=new Date(dob),t=new Date();let a=t.getFullYear()-d.getFullYear();const m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return a}
 function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function today(){return new Date().toISOString().slice(0,10)}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function fmtDate(s){if(!s)return"—";const d=new Date(s+"T00:00");return d.toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"})}
 const TYPE_LABEL={dues:"Dues",donation:"Donation","other-in":"Other income",expense:"Expense"};
 const IN_TYPES=["dues","donation","other-in"];
@@ -513,7 +513,8 @@ function exportCSV(){
   const head=["Name","DOB","Age","Phone","Email","Address","Join date","Card #","Dues"];
   const rows=members.map(m=>[m.name,m.dob,m.dob?age(m.dob):"",m.phone,m.email,m.addr,m.join,m.card,m.dues]
     .map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(","));
-  const blob=new Blob([head.join(",")+"\n"+rows.join("\n")],{type:"text/csv"});
+  /* BOM so Excel on Windows shows Korean names correctly */
+  const blob=new Blob(["\ufeff"+head.join(",")+"\n"+rows.join("\n")],{type:"text/csv"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sangnok_members_"+today()+".csv";a.click();toast("Members exported");
 }
