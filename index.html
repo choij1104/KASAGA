@@ -123,11 +123,18 @@
   /* ---------- Footer note ---------- */
   .note{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:30px;line-height:1.7}
   .data-tools{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .pill-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   @media(max-width:560px){
     header{padding:16px 18px}
     header h1{font-size:17px}
     nav button{padding:14px 14px;font-size:15px}
     .stat .value{font-size:26px}
+  }
+  /* Touch devices: guarantee 44px minimum touch targets (desktop unchanged) */
+  @media (pointer:coarse){
+    .btn-sm{padding:11px 16px;font-size:14px;min-height:44px}
+    .row-actions .btn-sm{margin:2px 0}
+    .pill-toggle{padding:8px 14px;display:inline-block}
   }
 </style>
 </head>
@@ -356,6 +363,12 @@ function toggleDues(id){
   const m=members.find(x=>x.id===id);if(!m)return;
   m.dues=m.dues==="paid"?"unpaid":"paid";persist();renderMembers();
 }
+/* Keyboard support for the dues toggle pill (touch/mouse behavior unchanged) */
+document.addEventListener("keydown",function(e){
+  if((e.key==="Enter"||e.key===" ")&&e.target&&e.target.classList&&e.target.classList.contains("pill-toggle")){
+    e.preventDefault();toggleDues(e.target.dataset.id);
+  }
+});
 function renderMembers(){
   const q=(document.getElementById("m_search").value||"").toLowerCase();
   const rows=members
@@ -369,7 +382,7 @@ function renderMembers(){
     <td>${esc(m.phone)||"—"}</td>
     <td>${esc(m.card)||"—"}</td>
     <td>${fmtDate(m.join)}</td>
-    <td><span class="pill ${m.dues==='paid'?'paid':'unpaid'}" style="cursor:pointer" onclick="toggleDues('${m.id}')" title="Click to toggle">${m.dues==='paid'?'Paid':'Unpaid'}</span></td>
+    <td><span class="pill ${m.dues==='paid'?'paid':'unpaid'} pill-toggle" style="cursor:pointer" onclick="toggleDues('${m.id}')" data-id="${m.id}" tabindex="0" role="button" title="Click or press Enter to toggle">${m.dues==='paid'?'Paid':'Unpaid'}</span></td>
     <td><div class="row-actions">
       <button class="btn btn-ghost btn-sm" onclick="editMember('${m.id}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="delMember('${m.id}')">Remove</button>
